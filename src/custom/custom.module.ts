@@ -14,10 +14,14 @@
 
 import { NgModule, Provider } from '@angular/core';
 
+import { AddonRemoteThemesProvider } from '@addon/remotethemes/providers/remotethemes';
 import { CoreCoursesProvider } from '@core/courses/providers/courses';
+import { CoreSitesFactoryProvider } from '@providers/sites-factory';
 import { CoreSitesProvider } from '@providers/sites';
 
+import { CustomAddonRemoteThemesProvider } from './addon/remotethemes/remotethemes';
 import { CustomCoreCoursesProvider } from './core/courses/providers/courses';
+import { CustomCoreSitesFactoryProvider } from './providers/sites-factory';
 import { CustomCoreSitesProvider } from './providers/sites';
 
 @NgModule({
@@ -25,6 +29,7 @@ import { CustomCoreSitesProvider } from './providers/sites';
     imports: [],
     providers: [
         { provide: CoreCoursesProvider, useClass: CustomCoreCoursesProvider },
+        { provide: AddonRemoteThemesProvider, useClass: CustomAddonRemoteThemesProvider },
     ],
     exports: []
 })
@@ -32,6 +37,7 @@ export class CustomModule {
 
     static rootProviders: Provider[] = [
         { provide: CoreSitesProvider, useClass: CustomCoreSitesProvider },
+        { provide: CoreSitesFactoryProvider, useClass: CustomCoreSitesFactoryProvider },
     ];
 
 }
