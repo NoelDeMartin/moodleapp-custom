@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { NgModule, Provider } from '@angular/core';
+import { NgModule, Provider, Injector } from '@angular/core';
 
 import { AddonRemoteThemesProvider } from '@addon/remotethemes/providers/remotethemes';
 import { CoreSitesFactoryProvider } from '@providers/sites-factory';
 
 import { CustomAddonRemoteThemesProvider } from './addon/remotethemes/remotethemes';
 import { CustomCoreSitesFactoryProvider } from './providers/sites-factory';
+import { initializeFacadesInjector } from './facades/Facade';
 
 @NgModule({
     declarations: [],
@@ -33,5 +34,9 @@ export class CustomModule {
     static rootProviders: Provider[] = [
         { provide: CoreSitesFactoryProvider, useClass: CustomCoreSitesFactoryProvider },
     ];
+
+    constructor(injector: Injector) {
+        initializeFacadesInjector(injector);
+    }
 
 }

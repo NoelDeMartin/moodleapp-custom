@@ -13,38 +13,19 @@
 // limitations under the License.
 
 import { AddonRemoteThemesProvider } from '@addon/remotethemes/providers/remotethemes';
-import { CoreAppProvider } from '@providers/app';
-import { CoreFilepoolProvider } from '@providers/filepool';
-import { CoreFileProvider } from '@providers/file';
-import { CoreLoggerProvider } from '@providers/logger';
-import { CoreSitesProvider } from '@providers/sites';
-import { CoreUtilsProvider } from '@providers/utils/utils';
-import { CustomCoreSite } from 'custom/classes/site';
-import { Http } from '@angular/http';
 import { Injectable } from '@angular/core';
+import CustomCoreSitesProvider from '../../facades/CustomCoreSitesProvider';
 
 @Injectable()
 export class CustomAddonRemoteThemesProvider extends AddonRemoteThemesProvider {
 
-    constructor(
-        logger: CoreLoggerProvider,
-        private mySitesProvider: CoreSitesProvider,
-        fileProvider: CoreFileProvider,
-        filepoolProvider: CoreFilepoolProvider,
-        http: Http,
-        utils: CoreUtilsProvider,
-        appProvider: CoreAppProvider,
-    ) {
-        super(logger, mySitesProvider, fileProvider, filepoolProvider, http, utils, appProvider);
-    }
-
     async get(siteId?: string): Promise<{fileUrl: string, styles: string}> {
-        siteId = siteId || this.mySitesProvider.getCurrentSiteId();
+        siteId = siteId || CustomCoreSitesProvider.instance.getCurrentSiteId();
 
-        const site = (await this.mySitesProvider.getSite(siteId)) as CustomCoreSite;
+        const site = await CustomCoreSitesProvider.instance.getSite(siteId);
 
         if (!site.isPremium) {
-            throw new Error(`Remote sites are disabled for ${site.siteUrl} because it doesn't have a Premium subscription`);
+            throw new Error(`Remote themes are disabled for ${site.siteUrl} because it doesn't have a Premium subscription`);
         }
 
         return await super.get(siteId);
