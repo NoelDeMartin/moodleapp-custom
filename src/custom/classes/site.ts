@@ -17,27 +17,25 @@ import SiteSubscriptionsManager, { SubscriptionTier } from '../services/SiteSubs
 
 export class CustomCoreSite extends CoreSite {
 
+    subscriptionTier: SubscriptionTier;
+
     get isPro(): boolean {
-        return this.infos && (this.infos.subscriptionTier === SubscriptionTier.Pro ||
-            this.isPremium);
+        return this.subscriptionTier === SubscriptionTier.Pro || this.isPremium;
     }
 
     get isPremium(): boolean {
-        return this.infos && (this.infos.subscriptionTier === SubscriptionTier.Premium ||
-            this.isBranded);
+        return this.subscriptionTier === SubscriptionTier.Premium || this.isBranded;
     }
 
     get isBranded(): boolean {
-        return this.infos && this.infos.subscriptionTier === SubscriptionTier.Branded;
+        return this.subscriptionTier === SubscriptionTier.Branded;
     }
 
     // Override
     async fetchSiteInfo(): Promise<any> {
-        const info = await super.fetchSiteInfo();
+        this.subscriptionTier = await SiteSubscriptionsManager.getSubscriptionTier(this.siteUrl);
 
-        info.subscriptionTier = await SiteSubscriptionsManager.getSubscriptionTier(this.siteUrl);
-
-        return info;
+        return await super.fetchSiteInfo();
     }
 
 }
