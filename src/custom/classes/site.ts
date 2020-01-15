@@ -13,11 +13,18 @@
 // limitations under the License.
 
 import { CoreSite } from '@classes/site';
+import Arr from '../services/Arr';
+import Obj from '../services/Obj';
 import SiteSubscriptionsManager, { SubscriptionTier } from '../services/SiteSubscriptionsManager';
 
 const DISABLED_FEATURES_LIMITS = {
     [SubscriptionTier.Free]: 1,
     [SubscriptionTier.Pro]: 2,
+};
+
+const CUSTOM_LANGUAGE_STRINGS_LIMITS = {
+    [SubscriptionTier.Free]: 10,
+    [SubscriptionTier.Pro]: 20,
 };
 
 export class CustomCoreSite extends CoreSite {
@@ -47,27 +54,85 @@ export class CustomCoreSite extends CoreSite {
     getStoredConfig(name?: string): any {
         const value = super.getStoredConfig(name);
 
-        if (name === 'tool_mobile_disabledfeatures') {
-            const maxDisabledFeatures = SiteSubscriptionsManager.getTierLimit(this.subscriptionTier, DISABLED_FEATURES_LIMITS);
+        switch (name) {
+            case 'tool_mobile_disabledfeatures':
+                return this.limitDisabledFeatures(value);
+            case 'tool_mobile_customlangstrings':
+                return this.limitCustomLanguageStrings(value);
+            default:
+                return value;
+        }
+    }
 
-            if (maxDisabledFeatures !== null && value) {
-                const disabledFeatures = value.split(',');
+    private limitDisabledFeatures(value: string): string {
+        const maxDisabledFeatures = SiteSubscriptionsManager.getTierLimit(this.subscriptionTier, DISABLED_FEATURES_LIMITS);
 
-                if (disabledFeatures.length > maxDisabledFeatures) {
-                    const removedDisabledFeatures = disabledFeatures.splice(
-                        maxDisabledFeatures,
-                        disabledFeatures.length - maxDisabledFeatures,
-                    );
-
-                    // tslint:disable-next-line
-                    console.warn(`${removedDisabledFeatures.length} disabled features have been ignored because a superior subscription tier is required`);
-
-                    return disabledFeatures.join(',');
-                }
-            }
+        if (maxDisabledFeatures === null && !value) {
+            return value;
         }
 
-        return value;
+        const disabledFeatures = value.split(',');
+
+        if (disabledFeatures.length <= maxDisabledFeatures) {
+            return value;
+        }
+
+        const removedDisabledFeatures = disabledFeatures.splice(
+            maxDisabledFeatures,
+            disabledFeatures.length - maxDisabledFeatures,
+        );
+
+        // tslint:disable-next-line
+        console.warn(`${removedDisabledFeatures.length} disabled features have been ignored because a superior subscription tier is required`);
+
+        return disabledFeatures.join(',');
+    }
+
+    private limitCustomLanguageStrings(value: string): string {
+        const maxStrings = SiteSubscriptionsManager.getTierLimit(this.subscriptionTier, CUSTOM_LANGUAGE_STRINGS_LIMITS);
+
+        if (maxStrings === null && !value) {
+            return value;
+        }
+
+        // Map strings by language
+        const languageStrings = value.split(/(?:\r\n|\r|\n)/);
+        const languageStringsMap = {};
+
+        for (const languageString of languageStrings) {
+            const values = languageString.split('|');
+
+            if (values.length < 3) {
+                // Not enough data, ignore the entry.
+                continue;
+            }
+
+            const language = values[2].replace(/_/g, '-'); // Use the app format instead of Moodle format.
+
+            if (!(language in languageStringsMap)) {
+                languageStringsMap[language] = [];
+            }
+
+            languageStringsMap[language].push(languageString);
+        }
+
+        // Remove strings past the limit
+        for (const language in languageStringsMap) {
+            if (languageStringsMap[language].length <= maxStrings) {
+                continue;
+            }
+
+            const removedStrings = languageStringsMap[language].splice(
+                maxStrings,
+                languageStringsMap[language].length - maxStrings,
+            );
+
+            // tslint:disable-next-line
+            console.warn(`${removedStrings.length} custom strings have been ignored from ${language} because a superior subscription tier is required`);
+        }
+
+        // Rebuild value
+        return Arr.flatten(Obj.values(languageStringsMap)).join('\n');
     }
 
 }
