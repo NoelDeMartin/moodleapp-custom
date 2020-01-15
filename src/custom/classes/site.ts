@@ -15,6 +15,11 @@
 import { CoreSite } from '@classes/site';
 import SiteSubscriptionsManager, { SubscriptionTier } from '../services/SiteSubscriptionsManager';
 
+const DISABLED_FEATURES_LIMITS = {
+    [SubscriptionTier.Free]: 1,
+    [SubscriptionTier.Pro]: 2,
+};
+
 export class CustomCoreSite extends CoreSite {
 
     subscriptionTier: SubscriptionTier;
@@ -43,7 +48,7 @@ export class CustomCoreSite extends CoreSite {
         const value = super.getStoredConfig(name);
 
         if (name === 'tool_mobile_disabledfeatures') {
-            const maxDisabledFeatures = this.getMaximumDisabledFeatures();
+            const maxDisabledFeatures = SiteSubscriptionsManager.getTierLimit(this.subscriptionTier, DISABLED_FEATURES_LIMITS);
 
             if (maxDisabledFeatures !== null && value) {
                 const disabledFeatures = value.split(',');
@@ -63,17 +68,6 @@ export class CustomCoreSite extends CoreSite {
         }
 
         return value;
-    }
-
-    private getMaximumDisabledFeatures(): number | null {
-        switch (this.subscriptionTier) {
-            case SubscriptionTier.Free:
-                return 1;
-            case SubscriptionTier.Pro:
-                return 2;
-            default:
-                return null;
-        }
     }
 
 }

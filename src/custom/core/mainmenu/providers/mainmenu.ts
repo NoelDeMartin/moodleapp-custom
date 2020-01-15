@@ -13,10 +13,14 @@
 // limitations under the License.
 
 import { CoreMainMenuProvider, CoreMainMenuCustomItem } from '@core/mainmenu/providers/mainmenu';
-import { CustomCoreSite } from '../../../classes/site';
 import { Injectable } from '@angular/core';
-import { SubscriptionTier } from '../../../services/SiteSubscriptionsManager';
 import CustomCoreSitesProvider from '../../../facades/CustomCoreSitesProvider';
+import SiteSubscriptionsManager, { SubscriptionTier } from '../../../services/SiteSubscriptionsManager';
+
+const CUSTOM_MENU_ITEMS_LIMITS = {
+    [SubscriptionTier.Free]: 1,
+    [SubscriptionTier.Pro]: 2,
+};
 
 @Injectable()
 export class CustomCoreMainMenuProvider extends CoreMainMenuProvider {
@@ -24,7 +28,7 @@ export class CustomCoreMainMenuProvider extends CoreMainMenuProvider {
     async getCustomMenuItems(siteId?: string): Promise<CoreMainMenuCustomItem[]> {
         const items = await super.getCustomMenuItems(siteId);
         const site = await CustomCoreSitesProvider.instance.getSite(siteId);
-        const maxItems = this.getMaximumCustomMenuItems(site);
+        const maxItems = SiteSubscriptionsManager.getTierLimit(site.subscriptionTier, CUSTOM_MENU_ITEMS_LIMITS);
 
         if (maxItems !== null && items.length > maxItems) {
             const removedItems = items.splice(maxItems, items.length - maxItems);
@@ -34,17 +38,6 @@ export class CustomCoreMainMenuProvider extends CoreMainMenuProvider {
         }
 
         return items;
-    }
-
-    private getMaximumCustomMenuItems(site: CustomCoreSite): number | null {
-        switch (site.subscriptionTier) {
-            case SubscriptionTier.Free:
-                return 1;
-            case SubscriptionTier.Pro:
-                return 2;
-            default:
-                return null;
-        }
     }
 
 }

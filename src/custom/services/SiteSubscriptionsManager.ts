@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export const enum SubscriptionTier {
-    Free,
-    Pro,
-    Premium,
-    Branded,
+export enum SubscriptionTier {
+    Free = 'free',
+    Pro = 'pro',
+    Premium = 'premium',
+    Branded = 'branded',
 }
 
 class SiteSubscriptionsManager {
@@ -24,6 +24,10 @@ class SiteSubscriptionsManager {
     async getSubscriptionTier(url: string): Promise<SubscriptionTier> {
         // TODO replace stub
         return Promise.resolve(SubscriptionTier.Free);
+    }
+
+    getTierLimit(tier: SubscriptionTier, limits: { [tier in SubscriptionTier]?: number }): number | null {
+        return tier in limits ? limits[tier] : null;
     }
 
 }

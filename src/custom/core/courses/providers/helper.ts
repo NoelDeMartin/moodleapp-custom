@@ -14,11 +14,15 @@
 
 import { CoreCourseHelperProvider } from '@core/course/providers/helper';
 import { CoreCourseOptionsMenuHandlerToDisplay, CoreCourseOptionsHandlerToDisplay } from '@core/course/providers/options-delegate';
-import { CustomCoreSite } from '../../../classes/site';
 import { Injectable } from '@angular/core';
-import { SubscriptionTier } from '../../../services/SiteSubscriptionsManager';
 import CustomCoreCourseProvider from '../../../facades/CustomCoreCourseProvider';
 import CustomCoreSitesProvider from '../../../facades/CustomCoreSitesProvider';
+import SiteSubscriptionsManager, { SubscriptionTier } from '../../../services/SiteSubscriptionsManager';
+
+const DOWNLOAD_LIMITS = {
+    [SubscriptionTier.Free]: 2,
+    [SubscriptionTier.Pro]: 5,
+};
 
 @Injectable()
 export class CustomCoreCourseHelperProvider extends CoreCourseHelperProvider {
@@ -28,7 +32,7 @@ export class CustomCoreCourseHelperProvider extends CoreCourseHelperProvider {
             menuHandlers?: CoreCourseOptionsMenuHandlerToDisplay[]): Promise<boolean> {
 
         const site = CustomCoreSitesProvider.instance.getCurrentSite();
-        const downloadLimit = this.getCoursesDownloadLimit(site);
+        const downloadLimit = SiteSubscriptionsManager.getTierLimit(site.subscriptionTier, DOWNLOAD_LIMITS);
 
         if (downloadLimit !== null) {
             const downloadedCourses = await CustomCoreCourseProvider.instance.getDownloadedCourses();
@@ -39,17 +43,6 @@ export class CustomCoreCourseHelperProvider extends CoreCourseHelperProvider {
         }
 
         return super.confirmAndPrefetchCourse(data, course, sections, courseHandlers, menuHandlers);
-    }
-
-    private getCoursesDownloadLimit(site: CustomCoreSite): number | null {
-        switch (site.subscriptionTier) {
-            case SubscriptionTier.Free:
-                return 2;
-            case SubscriptionTier.Pro:
-                return 5;
-            default:
-                return null;
-        }
     }
 
 }
