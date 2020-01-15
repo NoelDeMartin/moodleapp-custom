@@ -16,6 +16,7 @@ import { NgModule, Provider, Injector } from '@angular/core';
 
 import { AddonRemoteThemesProvider } from '@addon/remotethemes/providers/remotethemes';
 import { CoreCourseHelperProvider } from '@core/course/providers/helper';
+import { CoreLoginHelperProvider } from '@core/login/providers/helper';
 import { CoreMainMenuProvider } from '@core/mainmenu/providers/mainmenu';
 import { CoreSitesFactoryProvider } from '@providers/sites-factory';
 
@@ -23,6 +24,7 @@ import { CoreCourseProvider } from '@core/course/providers/course';
 import { CustomAddonRemoteThemesProvider } from './addon/remotethemes/remotethemes';
 import { CustomCoreCourseHelperProvider } from './core/courses/providers/helper';
 import { CustomCoreCourseProvider } from './core/courses/providers/course';
+import { CustomCoreLoginHelperProvider } from './core/login/providers/helper';
 import { CustomCoreMainMenuProvider } from './core/mainmenu/providers/mainmenu';
 import { CustomCoreSitesFactoryProvider } from './providers/sites-factory';
 import { initializeFacadesInjector } from './facades/Facade';
@@ -35,6 +37,7 @@ import { initializeFacadesInjector } from './facades/Facade';
         { provide: CoreCourseHelperProvider, useClass: CustomCoreCourseHelperProvider },
         { provide: CoreCourseProvider, useClass: CustomCoreCourseProvider },
         { provide: CoreMainMenuProvider, useClass: CustomCoreMainMenuProvider },
+        { provide: CoreLoginHelperProvider, useClass: CustomCoreLoginHelperProvider },
     ],
     exports: []
 })

@@ -38,4 +38,42 @@ export class CustomCoreSite extends CoreSite {
         return await super.fetchSiteInfo();
     }
 
+    // Override
+    getStoredConfig(name?: string): any {
+        const value = super.getStoredConfig(name);
+
+        if (name === 'tool_mobile_disabledfeatures') {
+            const maxDisabledFeatures = this.getMaximumDisabledFeatures();
+
+            if (maxDisabledFeatures !== null && value) {
+                const disabledFeatures = value.split(',');
+
+                if (disabledFeatures.length > maxDisabledFeatures) {
+                    const removedDisabledFeatures = disabledFeatures.splice(
+                        maxDisabledFeatures,
+                        disabledFeatures.length - maxDisabledFeatures,
+                    );
+
+                    // tslint:disable-next-line
+                    console.warn(`${removedDisabledFeatures.length} disabled features have been ignored because a superior subscription tier is required`);
+
+                    return disabledFeatures.join(',');
+                }
+            }
+        }
+
+        return value;
+    }
+
+    private getMaximumDisabledFeatures(): number | null {
+        switch (this.subscriptionTier) {
+            case SubscriptionTier.Free:
+                return 1;
+            case SubscriptionTier.Pro:
+                return 2;
+            default:
+                return null;
+        }
+    }
+
 }
